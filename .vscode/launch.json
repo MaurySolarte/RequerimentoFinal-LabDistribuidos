@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ServidorchatApplication",
+            "request": "launch",
+            "mainClass": "co.edu.unicauca.servidorchat.ServidorchatApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-ServidorchatApplication<servidorchat>",
             "request": "launch",
             "cwd": "${workspaceFolder}",

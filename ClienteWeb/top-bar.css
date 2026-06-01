@@ -1,7 +1,8 @@
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Mantiene los dos bloques en los extremos */
+  justify-content: space-between;
+  /* Mantiene los dos bloques en los extremos */
   gap: 12px;
   margin-bottom: 1.5rem;
 }
@@ -57,8 +58,8 @@
   background: #ffffff;
   color: #2c59cb;
   outline: none;
-  cursor: pointer; 
-  transition: all 0.1s ease; 
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
 
 .top-bar .botones_conexion button:hover {
@@ -67,7 +68,7 @@
 }
 
 .top-bar .botones_conexion button:active {
-  transform: scale(0.95); 
+  transform: scale(0.95);
   background: #e1e7ff;
-  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1); 
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
 }

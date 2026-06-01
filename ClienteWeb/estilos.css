@@ -31,18 +31,20 @@ body {
 
 #reacciones {
   display: flex;
-  justify-content: center; 
-  gap: 5px;               
-  margin-bottom: 1rem;     
+  justify-content: center;
+  /* Centra horizontalmente los iconos */
+  gap: 15px;
+  /* Mantiene una buena separación entre ellos */
+  margin-bottom: 1rem;
+  /* Espacio opcional abajo antes del título */
 }
 
+/* 2. Centramos el título "Reacciones recibidas" */
 #chat h3 {
-  text-align: center;      
-  margin-top: 0;           
-  margin-bottom: 1rem;     
-   font-size: 20px;
-  font-weight: 600;
-  color: #2c2c2a;
+  text-align: center;
+  /* Centra el texto del título */
+  margin-top: 0;
+  /* Resetea márgenes por si acaso */
+  margin-bottom: 1rem;
+  /* Espacio antes de la caja gris */
 }
-
-
