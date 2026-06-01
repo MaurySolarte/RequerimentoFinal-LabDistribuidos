@@ -3,6 +3,7 @@ package co.edu.unicauca.servidorchat.capaControladores;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 
 import co.edu.unicauca.servidorchat.capaModelo.CallbackMessage;
 import co.edu.unicauca.servidorchat.capaServicios.ReaccionesService;
@@ -17,7 +18,7 @@ public class ReaccionesController {
   }
 
   @MessageMapping("/enviarReaccion")
-  public void enviarReaccion(@Payload CallbackMessage message) {
-    reaccionesService.procesarReaccion(message);
+  public void enviarReaccion(@Payload CallbackMessage message, StompHeaderAccessor headerAccessor) {
+	    reaccionesService.procesarReaccion(message, headerAccessor.getSessionId());
   }
 }

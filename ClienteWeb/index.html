@@ -3,11 +3,13 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spotify</title>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-  <script src="funciones.js" defer></script>
+  <script src="cliente_receptor_fragmentos.js" defer></script>
   <script src="animaciones.js" defer></script>
+  <script src="funciones.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="estilos.css">
   <link rel="stylesheet" href="animaciones.css">
@@ -16,94 +18,101 @@
 </head>
 
 <body>
+  <div class="modal-nickname" id="modal-nickname">
+    <div class="modal-contenido">
+      <div>
+        <span class="modal-etiqueta">Antes de continuar</span>
+        <h2>Ingresa tu nickname</h2>
+        <p>Este nombre se usará en las notificaciones y reacciones del sistema.</p>
+      </div>
+      <input type="text" id="nicknameModalInput" placeholder="Ej: usuario123">
+      <button id="btnConfirmarNickname">Continuar</button>
+    </div>
+  </div>
+
   <div class="top-bar">
     <div class="usuario-grupo">
       <label for="nickname">Nickname del usuario:</label>
       <input type="text" id="nickname" placeholder="Ej: usuario123">
+      <span class="estado-conexion" id="estado-conexion">Desconectado</span>
     </div>
 
     <div class="botones_conexion">
-      <button id="btnConectar" onclick="conectar()">Conectar</button>
-      <button id="btnDesconectar" onclick="desconectar()" disabled>Desconectar</button>
+      <button id="btnConectar">Conectar</button>
+      <button id="btnDesconectar" disabled>Desconectar</button>
     </div>
   </div>
 
-  <!-- Grid principal -->
-  <div class="grid">
+  <main class="grid tablero-principal">
+    <section class="card panel-catalogo">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Catálogo</span>
+        <h3>Tipos de audio</h3>
+      </div>
+      <div class="chip-list" id="lista-tipos"></div>
+      <div class="lista-datos" id="lista-audios"></div>
+    </section>
 
-
-
-    <!-- 1. Reproductor simulado -->
-    <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+    <section class="card panel-detalle">
       <div class="player-area">
         <div class="song-info">
-          <div class="song-title" id="song-title">Aqui va el titulo de la cancion</div>
-          <div class="song-artist" id="song-artist"> Aqui va el nombre del artista</div>
+          <div class="song-title" id="song-title">Selecciona un audio</div>
+          <div class="song-artist" id="song-artist">Los metadatos aparecerán aquí</div>
         </div>
-
-
-        <div class="controls">
-          <button class="play-btn" id="play-btn" onclick="togglePlay()">
+        <audio id="audio-reproductor" controls preload="none"></audio>
+        <div class="controles-reproductor">
+          <button class="play-btn" id="play-btn" type="button">
             <i class="fa-solid fa-play" id="play-icon"></i>
           </button>
-        </div>
-
-      </div>
-    </div> <!-- Aqui acaba el reproductor simulado-->
-
-    <!-- 2. Usuarios reproduciendo -->
-    <div class="card">
-      <div class="nick-list" id="playing-list">
-        <span class="empty-state">Nadie reproduciendo aún</span>
-      </div>
-    </div> <!-- Aqui acaba la seccion de usuarios reproduciendo-->
-
-    <!-- 3. Feed de reacciones -->
-    <div class="card">
-      <div id="reacciones">
-        <i class="fa-solid fa-thumbs-up reaction icon-like" data-reaction="like"
-          onclick="enviarReaccionServidor(event)"></i>
-        <i class="fa-solid fa-heart reaction icon-heart" data-reaction="heart"
-          onclick="enviarReaccionServidor(event)"></i>
-        <i class="fa-solid fa-face-sad-tear reaction icon-sad" data-reaction="sad"
-          onclick="enviarReaccionServidor(event)"></i>
-        <i class="fa-solid fa-face-laugh reaction icon-fun" data-reaction="fun"
-          onclick="enviarReaccionServidor(event)"></i>
-      </div>
-
-      <div id="chat">
-        <h3>Reacciones recibidas</h3>
-        <div id="mensajes">
-          <!-- Las reacciones se mostrarán aquí -->
+          <span class="estado-reproduccion" id="estado-reproduccion">Detenido</span>
         </div>
       </div>
-    </div> <!-- Aqui acaba la seccion de reacciones-->
-
-    <!-- 4. Usuarios que detuvieron -->
-    <div class="card">
-      <div class="nick-list" id="stopped-list">
-        <span class="empty-state">Nadie ha detenido la reproducción</span>
+      <div class="detalle-audio" id="detalle-audio">
+        <span class="empty-state">Selecciona un audio para ver sus metadatos</span>
       </div>
-    </div> <!-- Aqui acaba la seccion de usuarios que detuvieron-->
+    </section>
 
-  </div><!-- /grid -->
+    <section class="card panel-actividad">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Tiempo real</span>
+        <h3>Actividad del canal</h3>
+      </div>
+      <div class="actividad-grilla">
+        <div class="actividad-bloque">
+          <h4>Nuevos oyentes</h4>
+          <div class="actividad-lista" id="actividad-oyentes">
+            <span class="empty-state">Sin actividad aún</span>
+          </div>
+        </div>
+        <div class="actividad-bloque">
+          <h4>Pausas y reanudaciones</h4>
+          <div class="actividad-lista" id="actividad-estados">
+            <span class="empty-state">Sin actividad aún</span>
+          </div>
+        </div>
+        <div class="actividad-bloque">
+          <h4>Reacciones</h4>
+          <div class="actividad-lista" id="actividad-reacciones">
+            <span class="empty-state">Sin actividad aún</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <section class="card panel-reacciones oculto" id="panel-reacciones">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Reacciones</span>
+        <h3>Comparte una respuesta</h3>
+      </div>
+      <div class="botones-reaccion" id="reacciones">
+        <button type="button" data-reaccion="👍">👍</button>
+        <button type="button" data-reaccion="❤️">❤️</button>
+        <button type="button" data-reaccion="😂">😂</button>
+        <button type="button" data-reaccion="🔥">🔥</button>
+        <button type="button" data-reaccion="😮">😮</button>
+      </div>
+    </section>
+  </main>
 </body>
 
 </html>

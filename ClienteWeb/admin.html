@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrador de audios</title>
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="top-bar.css">
+  <link rel="stylesheet" href="reproductor.css">
+  <style>
+    .panel-formulario {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+
+    .panel-formulario label {
+      font-size: 13px;
+      color: #5f5e5a;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .panel-formulario input,
+    .panel-formulario select,
+    .panel-formulario textarea,
+    .panel-formulario button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #d3d1c7;
+      background: #ffffff;
+      padding: 0.8rem;
+      font: inherit;
+    }
+
+    .panel-formulario textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .campos-dinamicos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .campo-dinamico {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .campo-dinamico input {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+    }
+
+    .resultado-admin {
+      margin-top: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      border: 1px solid #e2e0d8;
+      background: #f8f7f4;
+      min-height: 42px;
+    }
+
+    .resultado-admin.error {
+      border-color: #c94d4d;
+      background: #fff5f5;
+      color: #8a2a2a;
+    }
+
+    .resultado-admin.exito {
+      border-color: #2d8a57;
+      background: #f1fbf4;
+      color: #1f6a41;
+    }
+
+    .enlace-volver {
+      color: #2c59cb;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="usuario-grupo">
+      <label>Administrador web</label>
+      <a class="enlace-volver" href="index.html">Volver al cliente</a>
+    </div>
+    <div class="botones_conexion">
+      <button type="button" id="btnRefrescarCatalogo">Actualizar catálogo</button>
+    </div>
+  </div>
+
+  <main class="grid tablero-principal">
+    <section class="card panel-catalogo">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Catálogo</span>
+        <h3>Tipos y audios registrados</h3>
+      </div>
+      <div class="chip-list" id="lista-tipos-admin"></div>
+      <div class="lista-datos" id="lista-audios-admin"></div>
+    </section>
+
+    <section class="card panel-detalle">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Registro</span>
+        <h3>Nuevo audio con metadatos dinámicos</h3>
+      </div>
+
+      <form class="panel-formulario" id="formulario-registro">
+        <div>
+          <label for="tipo-audio-admin">Tipo de audio</label>
+          <select id="tipo-audio-admin" required></select>
+        </div>
+
+        <div>
+          <label for="titulo-admin">Título del audio</label>
+          <input type="text" id="titulo-admin" placeholder="Ej: Entrevista de la semana" required>
+        </div>
+
+        <div>
+          <label for="archivo-admin">Archivo de audio</label>
+          <input type="file" id="archivo-admin" accept="audio/*" required>
+        </div>
+
+        <div>
+          <label>Metadatos</label>
+          <div class="campos-dinamicos" id="campos-dinamicos-admin"></div>
+        </div>
+
+        <button type="submit">Registrar audio</button>
+      </form>
+
+      <div class="resultado-admin" id="resultado-admin">Completa el formulario para registrar un nuevo audio.</div>
+    </section>
+
+    <section class="card panel-actividad">
+      <div class="panel-cabecera">
+        <span class="panel-subtitulo">Detalle</span>
+        <h3>Información del audio seleccionado</h3>
+      </div>
+      <div class="detalle-audio" id="detalle-audio-admin">
+        <span class="empty-state">Selecciona un audio para ver su detalle</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const URL_SERVICIO_AUDIOS = 'http://localhost:8081';
+
+    const mapaCamposPorTipo = {
+      1: [
+        { clave: 'artistaPrincipal', etiqueta: 'Artista Principal' },
+        { clave: 'album', etiqueta: 'Álbum' },
+        { clave: 'generoMusical', etiqueta: 'Género Musical' }
+      ],
+      2: [
+        { clave: 'nombrePodcast', etiqueta: 'Nombre del Podcast' },
+        { clave: 'tituloEpisodio', etiqueta: 'Título del Episodio' },
+        { clave: 'anfitrion', etiqueta: 'Anfitrión' }
+      ],
+      3: [
+        { clave: 'tituloLibro', etiqueta: 'Título del Libro' },
+        { clave: 'autor', etiqueta: 'Autor' },
+        { clave: 'narrador', etiqueta: 'Narrador' }
+      ],
+      4: [
+        { clave: 'tipoSonido', etiqueta: 'Tipo de Sonido' },
+        { clave: 'fuenteAudio', etiqueta: 'Fuente del Audio' },
+        { clave: 'usoSugerido', etiqueta: 'Uso Sugerido' }
+      ]
+    };
+
+    let tiposDisponibles = [];
+    let audioSeleccionado = null;
+
+    document.addEventListener('DOMContentLoaded', iniciarAdmin);
+
+    function iniciarAdmin() {
+      document.getElementById('btnRefrescarCatalogo').addEventListener('click', cargarCatalogo);
+      document.getElementById('tipo-audio-admin').addEventListener('change', evento => renderizarCamposDinamicos(Number(evento.target.value)));
+      document.getElementById('formulario-registro').addEventListener('submit', registrarAudio);
+      cargarCatalogo();
+    }
+
+    async function cargarCatalogo() {
+      try {
+        const respuestaTipos = await fetch(`${URL_SERVICIO_AUDIOS}/tipos-audio`);
+        tiposDisponibles = await respuestaTipos.json();
+        renderizarTipos(tiposDisponibles);
+        renderizarSelectorTipos(tiposDisponibles);
+        if (tiposDisponibles.length > 0) {
+          document.getElementById('tipo-audio-admin').value = tiposDisponibles[0].id;
+          renderizarCamposDinamicos(tiposDisponibles[0].id);
+          await cargarAudiosPorTipo(tiposDisponibles[0].id);
+        }
+      } catch (error) {
+        mostrarResultado('No fue posible cargar el catálogo inicial.', true);
+      }
+    }
+
+    function renderizarSelectorTipos(tipos) {
+      const selector = document.getElementById('tipo-audio-admin');
+      selector.innerHTML = tipos.map(tipo => `<option value="${tipo.id}">${escapeHtml(tipo.nombre)}</option>`).join('');
+    }
+
+    function renderizarTipos(tipos) {
+      const contenedor = document.getElementById('lista-tipos-admin');
+      contenedor.innerHTML = '';
+      tipos.forEach(tipo => {
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'chip-tipo';
+        boton.textContent = tipo.nombre;
+        boton.addEventListener('click', () => seleccionarTipo(tipo));
+        contenedor.appendChild(boton);
+      });
+    }
+
+    function seleccionarTipo(tipo) {
+      document.getElementById('tipo-audio-admin').value = tipo.id;
+      renderizarCamposDinamicos(tipo.id);
+      cargarAudiosPorTipo(tipo.id);
+    }
+
+    function renderizarCamposDinamicos(tipoId) {
+      const contenedor = document.getElementById('campos-dinamicos-admin');
+      const campos = mapaCamposPorTipo[tipoId] || [];
+      contenedor.innerHTML = campos.map(campo => `
+        <div class="campo-dinamico">
+          <label for="${campo.clave}">${campo.etiqueta}</label>
+          <input type="text" id="${campo.clave}" name="${campo.clave}" placeholder="${campo.etiqueta}">
+        </div>
+      `).join('');
+    }
+
+    async function cargarAudiosPorTipo(tipoId) {
+      try {
+        const respuesta = await fetch(`${URL_SERVICIO_AUDIOS}/audios?tipo_id=${encodeURIComponent(tipoId)}`);
+        const audios = await respuesta.json();
+        renderizarAudios(Array.isArray(audios) ? audios : []);
+      } catch (error) {
+        document.getElementById('lista-audios-admin').innerHTML = '<span class="empty-state">No fue posible cargar los audios</span>';
+      }
+    }
+
+    function renderizarAudios(audios) {
+      const contenedor = document.getElementById('lista-audios-admin');
+      if (audios.length === 0) {
+        contenedor.innerHTML = '<span class="empty-state">No hay audios registrados para este tipo</span>';
+        return;
+      }
+
+      contenedor.innerHTML = '';
+      audios.forEach(audio => {
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'audio-item';
+        boton.innerHTML = `
+          <span class="audio-titulo">${escapeHtml(audio.titulo)}</span>
+          <span class="audio-subtitulo">#${audio.id} · ${escapeHtml(audio.tipoNombre || '')}</span>
+        `;
+        boton.addEventListener('click', () => seleccionarAudio(audio));
+        contenedor.appendChild(boton);
+      });
+    }
+
+    async function seleccionarAudio(audio) {
+      audioSeleccionado = audio;
+      const respuesta = await fetch(`${URL_SERVICIO_AUDIOS}/audios/${encodeURIComponent(audio.id)}`);
+      const detalle = await respuesta.json();
+      const contenedor = document.getElementById('detalle-audio-admin');
+      const metadatos = detalle.metadatos || {};
+      contenedor.innerHTML = `
+        <div class="detalle-cabecera">
+          <span class="detalle-tipo">${escapeHtml(detalle.tipoNombre || '')}</span>
+          <h3>${escapeHtml(detalle.titulo || '')}</h3>
+          <p>Archivo: ${escapeHtml(detalle.rutaArchivo || '')}</p>
+        </div>
+        <div class="detalle-matriz">
+          ${Object.entries(metadatos).map(([clave, valor]) => `
+            <div class="detalle-campo">
+              <span>${escapeHtml(clave)}</span>
+              <strong>${escapeHtml(valor)}</strong>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function registrarAudio(evento) {
+      evento.preventDefault();
+
+      const tipoId = Number(document.getElementById('tipo-audio-admin').value);
+      const titulo = document.getElementById('titulo-admin').value.trim();
+      const archivo = document.getElementById('archivo-admin').files[0];
+
+      if (!titulo || !archivo) {
+        mostrarResultado('Debes completar el título y el archivo.', true);
+        return;
+      }
+
+      const metadatos = {};
+      (mapaCamposPorTipo[tipoId] || []).forEach(campo => {
+        metadatos[campo.clave] = document.getElementById(campo.clave)?.value.trim() || '';
+      });
+
+      const formData = new FormData();
+      formData.append('titulo', titulo);
+      formData.append('tipo_id', String(tipoId));
+      formData.append('archivo', archivo);
+      formData.append('metadatos', JSON.stringify(metadatos));
+
+      try {
+        const respuesta = await fetch(`${URL_SERVICIO_AUDIOS}/audios`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const resultado = await respuesta.json();
+        if (!respuesta.ok) {
+          throw new Error(resultado.mensaje || 'No fue posible registrar el audio');
+        }
+
+        mostrarResultado(`Audio registrado: ${resultado.titulo} (#${resultado.id})`, false);
+        evento.target.reset();
+        renderizarCamposDinamicos(tipoId);
+        await cargarCatalogo();
+      } catch (error) {
+        mostrarResultado(error.message || 'Ocurrió un error registrando el audio.', true);
+      }
+    }
+
+    function mostrarResultado(mensaje, esError) {
+      const contenedor = document.getElementById('resultado-admin');
+      contenedor.textContent = mensaje;
+      contenedor.classList.toggle('error', esError);
+      contenedor.classList.toggle('exito', !esError);
+    }
+
+    function escapeHtml(valor) {
+      return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+
+</html>

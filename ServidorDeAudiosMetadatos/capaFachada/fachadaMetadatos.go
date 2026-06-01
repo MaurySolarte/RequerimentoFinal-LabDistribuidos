@@ -1,6 +1,7 @@
 package fachada
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -63,26 +64,12 @@ func ObtenerDetalleAudioDTO(audioID int32) (*pb.AudioDetails, error) {
 		Metadata: []*pb.MetadataItem{},
 	}
 
-	respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
-		Key:   "Titulo",
-		Value: audio.Metadatos.Titulo,
-	})
-	respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
-		Key:   "Artista",
-		Value: audio.Metadatos.Artista,
-	})
-	respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
-		Key:   "Genero",
-		Value: audio.Metadatos.Genero,
-	})
-	respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
-		Key:   "Album",
-		Value: audio.Metadatos.Album,
-	})
-	respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
-		Key:   "Duracion",
-		Value: audio.Metadatos.Duracion,
-	})
+	for clave, valor := range audio.Metadatos.Campos {
+		respuesta.Metadata = append(respuesta.Metadata, &pb.MetadataItem{
+			Key:   clave,
+			Value: valor,
+		})
+	}
 
 	return respuesta, nil
 }
@@ -110,10 +97,10 @@ func RegistrarAudio(tipoID int32, titulo string, data []byte, metadatos modelos.
 		Titulo:          audio.Titulo,
 		TipoAudio:       audio.TipoNombre,
 		RutaArchivo:     audio.ArchivoMP3,
-		Artista:         audio.Metadatos.Artista,
-		Genero:          audio.Metadatos.Genero,
-		Album:           audio.Metadatos.Album,
-		Duracion:        audio.Metadatos.Duracion,
+		Artista:         obtenerMetadato(audio.Metadatos.Campos, "artista"),
+		Genero:          obtenerMetadato(audio.Metadatos.Campos, "genero"),
+		Album:           obtenerMetadato(audio.Metadatos.Campos, "album"),
+		Duracion:        obtenerMetadato(audio.Metadatos.Campos, "duracion"),
 		FechaRegistro:   audio.FechaRegistro.Format(time.RFC3339),
 		FraseMotivadora: frasesMotivadoras[int(audio.ID)%len(frasesMotivadoras)],
 	}); err != nil {
@@ -131,12 +118,46 @@ func ObtenerAudioModelo(audioID int32) (*modelos.Audio, error) {
 	return capaAccesoDatos.ObtenerAudioPorID(audioID)
 }
 
+func ObtenerTiposAudioModelo() []modelos.TipoAudio {
+	return capaAccesoDatos.ObtenerTiposAudio()
+}
+
+func ObtenerAudioPorTituloModelo(titulo string) (*modelos.Audio, error) {
+	return capaAccesoDatos.ObtenerAudioPorTitulo(titulo)
+}
+
+func ObtenerAudioPorReferencia(referencia string) (*modelos.Audio, error) {
+	if referencia == "" {
+		return nil, fmt.Errorf("referencia vacia")
+	}
+
+	if audio, err := capaAccesoDatos.ObtenerAudioPorID(parsearEntero(referencia)); err == nil {
+		return audio, nil
+	}
+
+	return capaAccesoDatos.ObtenerAudioPorTitulo(referencia)
+}
+
+func obtenerMetadato(campos map[string]string, clave string) string {
+	if campos == nil {
+		return ""
+	}
+	if valor, ok := campos[clave]; ok {
+		return valor
+	}
+	return ""
+}
+
+func parsearEntero(valor string) int32 {
+	var resultado int32
+	_, _ = fmt.Sscanf(valor, "%d", &resultado)
+	return resultado
+}
+
 func convertirMetadatosAMapa(metadatos modelos.Metadato) map[string]string {
 	resultado := make(map[string]string)
-	resultado["Titulo"] = metadatos.Titulo
-	resultado["Artista"] = metadatos.Artista
-	resultado["Genero"] = metadatos.Genero
-	resultado["Album"] = metadatos.Album
-	resultado["Duracion"] = metadatos.Duracion
+	for clave, valor := range metadatos.Campos {
+		resultado[clave] = valor
+	}
 	return resultado
 }

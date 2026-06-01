@@ -8,11 +8,7 @@ type TipoAudio struct {
 }
 
 type Metadato struct {
-	Titulo   string
-	Artista  string
-	Genero   string
-	Album    string
-	Duracion string
+	Campos map[string]string
 }
 
 type Audio struct {

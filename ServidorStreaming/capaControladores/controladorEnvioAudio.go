@@ -27,7 +27,10 @@ func (thisC *ControladorServidor) EnviarCancionMedianteStream(
 	direcionCliente := ObtenerDireccionCliente(stream.Context())
 	//invocación a operación asincrona
 	go thisC.logger.AlmacenarSolicitud(req.Titulo, direcionCliente)
-	combined := req.GetTitulo() + "." + req.GetFormato()
+	combined := req.GetTitulo()
+	if combined == "" {
+		combined = req.GetTitulo() + "." + req.GetFormato()
+	}
 	return capafachadaservices.StreamAudioFile(
 		combined,
 		func(data []byte) error {

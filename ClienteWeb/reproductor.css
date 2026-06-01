@@ -5,6 +5,12 @@
   gap: 1rem;
 }
 
+.player-area audio {
+  width: 100%;
+  border-radius: 10px;
+  background: #f8f7f4;
+}
+
 .song-info {
   text-align: center;
 }
@@ -42,4 +48,10 @@
 
 .play-btn:active {
   transform: scale(0.95);
+}
+
+.controles-reproductor {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
 }

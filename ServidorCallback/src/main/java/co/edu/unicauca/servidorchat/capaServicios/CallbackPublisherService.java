@@ -32,4 +32,8 @@ public class CallbackPublisherService {
     public void publishText(String destination, String payload) {
         messagingTemplate.convertAndSend(destination, payload);
     }
+
+	public void publishObject(String destination, Object payload) {
+		messagingTemplate.convertAndSend(destination, payload);
+	}
 }

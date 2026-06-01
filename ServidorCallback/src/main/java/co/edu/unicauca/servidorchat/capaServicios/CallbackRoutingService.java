@@ -22,10 +22,27 @@ public class CallbackRoutingService {
         return BASE_DESTINATION + resolveSongKey(message) + "/reproducciones/fin";
     }
 
+    public String listenersDestination(CallbackMessage message) {
+        return BASE_DESTINATION + resolveAudioId(message) + "/oyentes";
+    }
+
+    public String statesDestination(CallbackMessage message) {
+        return BASE_DESTINATION + resolveAudioId(message) + "/estados";
+    }
+
+    public String reactionsDestination(CallbackMessage message) {
+        return BASE_DESTINATION + resolveAudioId(message) + "/reacciones";
+    }
+
     public String resolveSongKey(CallbackMessage message) {
         String rawKey = firstText(message.songKey(), message.songTitle(), "general");
         String normalized = rawKey.toLowerCase().replaceAll("[^a-z0-9]+", "-");
         return normalized.replaceAll("(^-|-$)", "");
+    }
+
+    public String resolveAudioId(CallbackMessage message) {
+        String rawAudioId = firstText(message.audioId(), message.songKey(), resolveSongKey(message));
+        return rawAudioId == null || rawAudioId.isBlank() ? "general" : rawAudioId.trim();
     }
 
     private String firstText(String firstChoice, String secondChoice, String fallback) {

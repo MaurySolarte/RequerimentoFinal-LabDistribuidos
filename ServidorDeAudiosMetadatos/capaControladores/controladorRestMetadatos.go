@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	capaAccesoDatos "servidoraudios.local/grpc-servidor-audios/capaAccesoDatos"
 	fachada "servidoraudios.local/grpc-servidor-audios/capaFachada"
 	modelos "servidoraudios.local/grpc-servidor-audios/capaModelos"
 	dto "servidoraudios.local/grpc-servidor-audios/dto"
@@ -88,17 +89,30 @@ func (c *ControladorRestMetadatos) ListarAudios(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	tipoFiltro := strings.TrimSpace(r.URL.Query().Get("tipo_id"))
 	audios := fachada.ObtenerAudiosModelo()
-	respuesta := make([]dto.CrearAudioRespuestaDTO, 0, len(audios))
+	if tipoFiltro != "" {
+		tipoID, err := strconv.ParseInt(tipoFiltro, 10, 32)
+		if err != nil {
+			responderError(w, http.StatusBadRequest, "tipo_id invalido")
+			return
+		}
+		filtrados := make([]modelos.Audio, 0)
+		for _, audio := range audios {
+			if audio.TipoID == int32(tipoID) {
+				filtrados = append(filtrados, audio)
+			}
+		}
+		audios = filtrados
+	}
+	respuesta := make([]dto.AudioResumenDTO, 0, len(audios))
 	for _, audio := range audios {
-		respuesta = append(respuesta, dto.CrearAudioRespuestaDTO{
-			ID:            audio.ID,
-			TipoID:        audio.TipoID,
-			TipoNombre:    audio.TipoNombre,
-			Titulo:        audio.Titulo,
-			RutaArchivo:   audio.ArchivoMP3,
-			FechaRegistro: audio.FechaRegistro.Format(time.RFC3339),
-			Metadatos:     convertirMetadatosDTO(audio.Metadatos),
+		respuesta = append(respuesta, dto.AudioResumenDTO{
+			ID:         audio.ID,
+			TipoID:     audio.TipoID,
+			TipoNombre: audio.TipoNombre,
+			Titulo:     audio.Titulo,
+			Metadatos:  convertirMetadatosDTO(audio.Metadatos),
 		})
 	}
 
@@ -111,26 +125,14 @@ func (c *ControladorRestMetadatos) ObtenerAudioPorID(w http.ResponseWriter, r *h
 		return
 	}
 
-	prefijo := "/audios/"
-	if !strings.HasPrefix(r.URL.Path, prefijo) {
-		responderError(w, http.StatusBadRequest, "ruta invalida")
+	referencia := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, "/audios/"))
+	referencia = strings.Trim(referencia, "/")
+	if referencia == "" {
+		responderError(w, http.StatusBadRequest, "id o titulo de audio obligatorio")
 		return
 	}
 
-	idTexto := strings.TrimPrefix(r.URL.Path, prefijo)
-	idTexto = strings.TrimSpace(idTexto)
-	if idTexto == "" {
-		responderError(w, http.StatusBadRequest, "id de audio obligatorio")
-		return
-	}
-
-	audioID, err := strconv.ParseInt(idTexto, 10, 32)
-	if err != nil {
-		responderError(w, http.StatusBadRequest, "id de audio invalido")
-		return
-	}
-
-	audio, err := fachada.ObtenerAudioModelo(int32(audioID))
+	audio, err := obtenerAudioPorReferencia(referencia)
 	if err != nil {
 		responderError(w, http.StatusNotFound, err.Error())
 		return
@@ -153,26 +155,14 @@ func (c *ControladorRestMetadatos) DescargarArchivoPorID(w http.ResponseWriter, 
 		return
 	}
 
-	prefijo := "/audios/file/"
-	if !strings.HasPrefix(r.URL.Path, prefijo) {
-		responderError(w, http.StatusBadRequest, "ruta invalida")
+	referencia := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, "/audios/file/"))
+	referencia = strings.Trim(referencia, "/")
+	if referencia == "" {
+		responderError(w, http.StatusBadRequest, "id o titulo de audio obligatorio")
 		return
 	}
 
-	idTexto := strings.TrimPrefix(r.URL.Path, prefijo)
-	idTexto = strings.TrimSpace(idTexto)
-	if idTexto == "" {
-		responderError(w, http.StatusBadRequest, "id de audio obligatorio")
-		return
-	}
-
-	audioID, err := strconv.ParseInt(idTexto, 10, 32)
-	if err != nil {
-		responderError(w, http.StatusBadRequest, "id de audio invalido")
-		return
-	}
-
-	audio, err := fachada.ObtenerAudioModelo(int32(audioID))
+	audio, err := obtenerAudioPorReferencia(referencia)
 	if err != nil {
 		responderError(w, http.StatusNotFound, err.Error())
 		return
@@ -191,34 +181,54 @@ func (c *ControladorRestMetadatos) DescargarArchivoPorID(w http.ResponseWriter, 
 	_, _ = io.Copy(w, file)
 }
 
+func (c *ControladorRestMetadatos) ListarTiposAudio(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		responderError(w, http.StatusMethodNotAllowed, "metodo no permitido")
+		return
+	}
+
+	tipos := fachada.ObtenerTiposAudioModelo()
+	respuesta := make([]dto.TipoAudioDTO, 0, len(tipos))
+	for _, tipo := range tipos {
+		respuesta = append(respuesta, dto.TipoAudioDTO{ID: tipo.ID, Nombre: tipo.Nombre})
+	}
+
+	responderJSON(w, http.StatusOK, respuesta)
+}
+
+func obtenerAudioPorReferencia(referencia string) (*modelos.Audio, error) {
+	if audioID, err := strconv.ParseInt(referencia, 10, 32); err == nil {
+		return fachada.ObtenerAudioModelo(int32(audioID))
+	}
+
+	return capaAccesoDatos.ObtenerAudioPorTitulo(referencia)
+}
+
 func parsearMetadatos(raw string) (modelos.Metadato, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return modelos.Metadato{}, nil
+		return modelos.Metadato{Campos: map[string]string{}}, nil
 	}
 
-	var entrada dto.MetadatoEntradaDTO
+	var entrada map[string]string
 	if err := json.Unmarshal([]byte(raw), &entrada); err != nil {
 		return modelos.Metadato{}, err
 	}
 
-	return modelos.Metadato{
-		Titulo:   strings.TrimSpace(entrada.Titulo),
-		Artista:  strings.TrimSpace(entrada.Artista),
-		Genero:   strings.TrimSpace(entrada.Genero),
-		Album:    strings.TrimSpace(entrada.Album),
-		Duracion: strings.TrimSpace(entrada.Duracion),
-	}, nil
+	resultado := make(map[string]string, len(entrada))
+	for clave, valor := range entrada {
+		resultado[strings.TrimSpace(clave)] = strings.TrimSpace(valor)
+	}
+
+	return modelos.Metadato{Campos: resultado}, nil
 }
 
-func convertirMetadatosDTO(metadato modelos.Metadato) dto.MetadatoEntradaDTO {
-	return dto.MetadatoEntradaDTO{
-		Titulo:   metadato.Titulo,
-		Artista:  metadato.Artista,
-		Genero:   metadato.Genero,
-		Album:    metadato.Album,
-		Duracion: metadato.Duracion,
+func convertirMetadatosDTO(metadato modelos.Metadato) map[string]string {
+	resultado := make(map[string]string, len(metadato.Campos))
+	for clave, valor := range metadato.Campos {
+		resultado[clave] = valor
 	}
+	return resultado
 }
 
 func responderJSON(w http.ResponseWriter, status int, payload any) {

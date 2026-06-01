@@ -14,8 +14,8 @@ var (
 	siguienteID int32 = 1
 	tiposAudios       = []modelos.TipoAudio{
 		{ID: 1, Nombre: "Musica"},
-		{ID: 2, Nombre: "Podcasts"},
-		{ID: 3, Nombre: "Audiolibros"},
+		{ID: 2, Nombre: "Podcast"},
+		{ID: 3, Nombre: "Audiolibro"},
 		{ID: 4, Nombre: "Ruido Blanco"},
 	}
 )
@@ -88,6 +88,20 @@ func AlmacenarAudio(tipoID int32, titulo string, rutaArchivo string, metadatos m
 
 	copia := nuevoAudio
 	return &copia, nil
+}
+
+func ObtenerAudioPorTitulo(titulo string) (*modelos.Audio, error) {
+	repoMu.RLock()
+	defer repoMu.RUnlock()
+
+	for _, audio := range audios {
+		if audio.Titulo == titulo {
+			audioEncontrado := audio
+			return &audioEncontrado, nil
+		}
+	}
+
+	return nil, fmt.Errorf("audio con titulo %q no encontrado", titulo)
 }
 
 func buscarNombreTipo(tipoID int32) (string, bool) {

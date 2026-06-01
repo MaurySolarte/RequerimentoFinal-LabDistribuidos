@@ -1,4 +1,4 @@
-const icons = document.querySelectorAll('#reacciones i');
+const icons = document.querySelectorAll('#reacciones [data-reaccion]');
 
 icons.forEach(icon => {
   icon.addEventListener('click', () => {
@@ -18,9 +18,11 @@ function handleReactionClick(icon) {
 
   // Efecto glow dorado
   icon.classList.add("gold-glow");
+  icon.classList.add('active');
 
   setTimeout(() => {
     icon.classList.remove("gold-glow");
+    icon.classList.remove('active');
   }, 300);
 
 }

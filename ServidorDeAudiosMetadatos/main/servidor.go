@@ -33,8 +33,9 @@ func iniciarServidorGRPC() {
 
 func iniciarServidorREST() {
 	controladorRest := capacontroladores.NewControladorRestMetadatos()
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/audios", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/audios", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			controladorRest.RegistrarAudio(w, r)
@@ -44,12 +45,27 @@ func iniciarServidorREST() {
 			http.Error(w, "metodo no permitido", http.StatusMethodNotAllowed)
 		}
 	})
+	mux.HandleFunc("/tipos-audio", controladorRest.ListarTiposAudio)
 
-	http.HandleFunc("/audios/", controladorRest.ObtenerAudioPorID)
-	http.HandleFunc("/audios/file/", controladorRest.DescargarArchivoPorID)
+	mux.HandleFunc("/audios/", controladorRest.ObtenerAudioPorID)
+	mux.HandleFunc("/audios/file/", controladorRest.DescargarArchivoPorID)
 
-	fmt.Println("Servidor de audios/metadatos REST escuchando en :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	handlerConCORS := permitirCORS(mux)
+	fmt.Println("Servidor de audios/metadatos REST escuchando en :8081")
+	if err := http.ListenAndServe(":8081", handlerConCORS); err != nil {
 		log.Fatalf("fallo servidor REST: %v", err)
 	}
+}
+
+func permitirCORS(siguiente http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "content-type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		siguiente.ServeHTTP(w, r)
+	})
 }

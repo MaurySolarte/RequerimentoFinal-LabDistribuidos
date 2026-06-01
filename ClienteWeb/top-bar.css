@@ -72,3 +72,12 @@
   background: #e1e7ff;
   box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.estado-conexion {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #d3d1c7;
+  background: #ffffff;
+}

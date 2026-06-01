@@ -9,15 +9,17 @@ public class ReaccionesService {
 
     private final CallbackPublisherService callbackPublisherService;
     private final CallbackRoutingService callbackRoutingService;
+	private final CanalAudioService canalAudioService;
 
     public ReaccionesService(CallbackPublisherService callbackPublisherService,
-            CallbackRoutingService callbackRoutingService) {
+	            CallbackRoutingService callbackRoutingService,
+				CanalAudioService canalAudioService) {
         this.callbackPublisherService = callbackPublisherService;
         this.callbackRoutingService = callbackRoutingService;
+		this.canalAudioService = canalAudioService;
     }
 
-    public void procesarReaccion(CallbackMessage message) {
-        callbackPublisherService.publishJson("/brokerDeReacciones/reaccionesPorCancion", message);
-        callbackPublisherService.publishJson(callbackRoutingService.reactionDestination(message), message);
+    public void procesarReaccion(CallbackMessage message, String sessionId) {
+		canalAudioService.registrarReaccion(message, sessionId);
     }
 }

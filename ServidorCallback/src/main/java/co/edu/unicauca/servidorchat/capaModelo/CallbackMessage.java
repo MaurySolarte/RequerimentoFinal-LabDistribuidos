@@ -3,7 +3,10 @@ package co.edu.unicauca.servidorchat.capaModelo;
 import java.util.Map;
 
 public record CallbackMessage(
+		String tipo,
         String nickname,
+		String audioId,
+		String emoji,
         String songKey,
         String songTitle,
         String songArtist,
@@ -12,7 +15,7 @@ public record CallbackMessage(
 
     public static CallbackMessage fromRawPayload(String payload) {
         if (payload == null) {
-            return new CallbackMessage(null, null, null, null, null, null);
+            return new CallbackMessage(null, null, null, null, null, null, null, null, null);
         }
 
         String trimmedPayload = payload.trim();
@@ -20,22 +23,26 @@ public record CallbackMessage(
             return fromJson(trimmedPayload);
         }
 
-        return new CallbackMessage(null, null, null, null, trimmedPayload, null);
+        return new CallbackMessage(null, null, null, null, null, null, null, trimmedPayload, null);
     }
 
     private static CallbackMessage fromJson(String payload) {
         try {
             var objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Map<String, String> data = objectMapper.readValue(payload, Map.class);
+            String tipo = data.get("tipo");
             return new CallbackMessage(
+                    tipo,
                     data.get("nickname"),
+                    data.get("audioId"),
+                    data.get("emoji"),
                     data.get("songKey"),
                     data.get("songTitle"),
                     data.get("songArtist"),
                     data.get("reaction"),
                     data.get("action"));
         } catch (Exception exception) {
-            return new CallbackMessage(null, null, null, null, payload, null);
+            return new CallbackMessage(null, null, null, null, null, null, null, payload, null);
         }
     }
 }
