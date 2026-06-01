@@ -1,0 +1,45 @@
+.player-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.song-info {
+  text-align: center;
+}
+
+.song-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c2c2a;
+}
+
+.song-artist {
+  font-size: 13px;
+  color: #888780;
+  margin-top: 3px;
+}
+
+.play-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #5f5e5a;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.play-btn:hover {
+  background: #444441;
+}
+
+.play-btn:active {
+  transform: scale(0.95);
+}

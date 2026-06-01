@@ -1,0 +1,48 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f0efec;
+  color: #2c2c2a;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e0d8;
+  border-radius: 14px;
+  padding: 1.25rem;
+  min-height: 200px;
+}
+
+#reacciones {
+  display: flex;
+  justify-content: center; 
+  gap: 5px;               
+  margin-bottom: 1rem;     
+}
+
+#chat h3 {
+  text-align: center;      
+  margin-top: 0;           
+  margin-bottom: 1rem;     
+   font-size: 20px;
+  font-weight: 600;
+  color: #2c2c2a;
+}
+
+

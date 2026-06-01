@@ -1,0 +1,73 @@
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Mantiene los dos bloques en los extremos */
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+
+.top-bar .usuario-grupo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar label {
+  font-size: 14px;
+  color: #5f5e5a;
+  white-space: nowrap;
+}
+
+.top-bar input[type="text"] {
+  width: 200px;
+  height: 36px;
+  font-size: 14px;
+  padding: 0 10px;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2c2c2a;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+
+.top-bar input[type="text"]:focus {
+  box-shadow: 0 0 0 3px #d3d1c7;
+}
+
+
+.top-bar .botones_conexion {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+
+.top-bar .botones_conexion button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 36px;
+  font-size: 14px;
+  padding: 0 10px;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2c59cb;
+  outline: none;
+  cursor: pointer; 
+  transition: all 0.1s ease; 
+}
+
+.top-bar .botones_conexion button:hover {
+  background: #f5f7ff;
+  border-color: #2c59cb;
+}
+
+.top-bar .botones_conexion button:active {
+  transform: scale(0.95); 
+  background: #e1e7ff;
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1); 
+}
