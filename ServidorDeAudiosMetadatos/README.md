@@ -5,7 +5,6 @@ Servidor en Go que ahora unifica:
 - almacenamiento de archivos de audio en disco;
 - almacenamiento de metadatos en memoria;
 - API REST para registro y consulta de audios;
-- publicacion asincrona a RabbitMQ cuando se registra un nuevo audio;
 - servicio gRPC de metadatos (compatibilidad temporal con el cliente actual).
 
 ## Endpoints REST
@@ -25,13 +24,6 @@ Servidor en Go que ahora unifica:
 
 - REST: `:8080`
 - gRPC metadatos: `:50052`
-
-## Variables de entorno RabbitMQ (opcionales)
-
-- `RABBITMQ_HOST` (default `localhost`)
-- `RABBITMQ_PORT` (default `5672`)
-- `RABBITMQ_USER` (default `admin`)
-- `RABBITMQ_PASSWORD` (default `1234`)
 
 ## Ejecutar
 

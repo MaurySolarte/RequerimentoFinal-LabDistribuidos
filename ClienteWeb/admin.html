@@ -34,6 +34,35 @@
       font: inherit;
     }
 
+    .panel-formulario button,
+    .botones_conexion button,
+    .audio-item,
+    .chip-tipo {
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .panel-formulario button:hover,
+    .botones_conexion button:hover,
+    .audio-item:hover,
+    .chip-tipo:hover {
+      box-shadow: 0 8px 18px rgba(44, 89, 203, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .panel-formulario button:hover {
+      border-color: #2c59cb;
+      background: #f5f7ff;
+    }
+
+    .panel-formulario button:active,
+    .botones_conexion button:active,
+    .audio-item:active,
+    .chip-tipo:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
     .panel-formulario textarea {
       min-height: 110px;
       resize: vertical;
@@ -136,7 +165,7 @@
         <button type="submit">Registrar audio</button>
       </form>
 
-      <div class="resultado-admin" id="resultado-admin">Completa el formulario para registrar un nuevo audio.</div>
+      <div class="resultado-admin" id="resultado-admin" hidden></div>
     </section>
 
     <section class="card panel-actividad">
@@ -339,6 +368,7 @@
     function mostrarResultado(mensaje, esError) {
       const contenedor = document.getElementById('resultado-admin');
       contenedor.textContent = mensaje;
+      contenedor.hidden = false;
       contenedor.classList.toggle('error', esError);
       contenedor.classList.toggle('exito', !esError);
     }

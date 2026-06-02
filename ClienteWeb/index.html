@@ -79,20 +79,14 @@
       </div>
       <div class="actividad-grilla">
         <div class="actividad-bloque">
-          <h4>Nuevos oyentes</h4>
+          <h4>Quienes pausaron</h4>
           <div class="actividad-lista" id="actividad-oyentes">
             <span class="empty-state">Sin actividad aún</span>
           </div>
         </div>
         <div class="actividad-bloque">
-          <h4>Pausas y reanudaciones</h4>
+          <h4>Inicios y reanudaciones</h4>
           <div class="actividad-lista" id="actividad-estados">
-            <span class="empty-state">Sin actividad aún</span>
-          </div>
-        </div>
-        <div class="actividad-bloque">
-          <h4>Reacciones</h4>
-          <div class="actividad-lista" id="actividad-reacciones">
             <span class="empty-state">Sin actividad aún</span>
           </div>
         </div>
@@ -100,16 +94,19 @@
     </section>
 
     <section class="card panel-reacciones oculto" id="panel-reacciones">
-      <div class="panel-cabecera">
-        <span class="panel-subtitulo">Reacciones</span>
-        <h3>Comparte una respuesta</h3>
-      </div>
-      <div class="botones-reaccion" id="reacciones">
+      <div id="reacciones">
         <button type="button" data-reaccion="👍">👍</button>
         <button type="button" data-reaccion="❤️">❤️</button>
         <button type="button" data-reaccion="😂">😂</button>
         <button type="button" data-reaccion="🔥">🔥</button>
         <button type="button" data-reaccion="😮">😮</button>
+      </div>
+
+      <div id="chat">
+        <h3>Reacciones recibidas</h3>
+        <div id="mensajes">
+          <span class="empty-state">Sin reacciones aún</span>
+        </div>
       </div>
     </section>
   </main>

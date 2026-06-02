@@ -450,19 +450,30 @@ function desuscribirseCanalesAudio() {
 
 function recibirOyente(mensaje) {
   const payload = parsearPayload(mensaje.body);
-  agregarEntradaActividad('actividad-oyentes', payload.nickname || 'Anónimo', 'Comenzó a escuchar', 'entrada');
+  if (payload.tipo === 'pausa' || payload.estado === 'pausó') {
+    agregarEntradaActividad('actividad-oyentes', payload.nickname || 'Anónimo', 'Pausó la reproducción', 'entrada');
+    return;
+  }
+
+  agregarEntradaActividad('actividad-estados', payload.nickname || 'Anónimo', 'Comenzó a reproducir', 'entrada');
 }
 
 function recibirEstadoReproduccion(mensaje) {
   const payload = parsearPayload(mensaje.body);
   const estado = payload.estado || payload.tipo || 'estado';
-  const etiqueta = estado === 'reanudó' || estado === 'reanuda' ? 'reanudó' : 'pausó';
-  agregarEntradaActividad('actividad-estados', payload.nickname || 'Anónimo', etiqueta, 'estado');
+  if (estado === 'reanudó' || estado === 'reanuda') {
+    agregarEntradaActividad('actividad-estados', payload.nickname || 'Anónimo', 'Reanudó la reproducción', 'estado');
+    return;
+  }
+
+  if (estado === 'pausó' || estado === 'pausa') {
+    agregarEntradaActividad('actividad-oyentes', payload.nickname || 'Anónimo', 'Pausó la reproducción', 'estado');
+  }
 }
 
 function recibirReaccion(mensaje) {
   const payload = parsearPayload(mensaje.body);
-  agregarReaccionActividad(payload.emoji || payload.reaction || mensaje.body, payload.nickname || 'Anónimo');
+  mostrarBurbujaReaccion(payload.emoji || payload.reaction || mensaje.body);
 }
 
 function agregarEntradaActividad(contenedorId, nickname, texto, claseExtra) {
@@ -484,25 +495,6 @@ function agregarEntradaActividad(contenedorId, nickname, texto, claseExtra) {
   limitarHijos(contenedor, 6);
 }
 
-function agregarReaccionActividad(emoji, nickname) {
-  const contenedor = document.getElementById('actividad-reacciones');
-  if (!contenedor) {
-    return;
-  }
-
-  eliminarEstadoVacio(contenedor);
-  const entrada = document.createElement('div');
-  entrada.className = 'entrada-actividad reaccion';
-  entrada.innerHTML = `
-    <span class="emoji-reaccion">${escapeHtml(emoji)}</span>
-    <strong>${escapeHtml(nickname)}</strong>
-    <span>reaccionó</span>
-    <time>${horaActual()}</time>
-  `;
-  contenedor.prepend(entrada);
-  limitarHijos(contenedor, 8);
-}
-
 function mostrarPanelReacciones() {
   document.getElementById('panel-reacciones')?.classList.remove('oculto');
 }
@@ -517,6 +509,7 @@ function actualizarBotonesAudio() {
   });
 }
 
+  mostrarBurbujaReaccion(emoji);
 function actualizarEstadoReproduccion(estado) {
   const icono = document.getElementById('play-icon');
   const etiqueta = document.getElementById('estado-reproduccion');

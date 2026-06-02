@@ -3,11 +3,9 @@ package fachada
 import (
 	"fmt"
 	"log"
-	"time"
 
 	capaAccesoDatos "servidoraudios.local/grpc-servidor-audios/capaAccesoDatos"
 	modelos "servidoraudios.local/grpc-servidor-audios/capaModelos"
-	componenteconexioncola "servidoraudios.local/grpc-servidor-audios/componenteConexionCola"
 	pb "servidoraudios.local/grpc-servidor-audios/serviciosAudio"
 )
 
@@ -85,28 +83,6 @@ func RegistrarAudio(tipoID int32, titulo string, data []byte, metadatos modelos.
 		return nil, err
 	}
 
-	publisher, err := componenteconexioncola.NewRabbitPublisher()
-	if err != nil {
-		log.Printf("[WARN] no se pudo inicializar publisher RabbitMQ: %v", err)
-		return audio, nil
-	}
-	defer publisher.Close()
-
-	if err := publisher.PublicarNotificacion(componenteconexioncola.NotificacionRegistroAudio{
-		AudioID:         audio.ID,
-		Titulo:          audio.Titulo,
-		TipoAudio:       audio.TipoNombre,
-		RutaArchivo:     audio.ArchivoMP3,
-		Artista:         obtenerMetadato(audio.Metadatos.Campos, "artista"),
-		Genero:          obtenerMetadato(audio.Metadatos.Campos, "genero"),
-		Album:           obtenerMetadato(audio.Metadatos.Campos, "album"),
-		Duracion:        obtenerMetadato(audio.Metadatos.Campos, "duracion"),
-		FechaRegistro:   audio.FechaRegistro.Format(time.RFC3339),
-		FraseMotivadora: frasesMotivadoras[int(audio.ID)%len(frasesMotivadoras)],
-	}); err != nil {
-		log.Printf("[WARN] no se pudo publicar notificacion en RabbitMQ: %v", err)
-	}
-
 	return audio, nil
 }
 
@@ -136,16 +112,6 @@ func ObtenerAudioPorReferencia(referencia string) (*modelos.Audio, error) {
 	}
 
 	return capaAccesoDatos.ObtenerAudioPorTitulo(referencia)
-}
-
-func obtenerMetadato(campos map[string]string, clave string) string {
-	if campos == nil {
-		return ""
-	}
-	if valor, ok := campos[clave]; ok {
-		return valor
-	}
-	return ""
 }
 
 func parsearEntero(valor string) int32 {

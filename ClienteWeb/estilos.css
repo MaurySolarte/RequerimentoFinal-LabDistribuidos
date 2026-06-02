@@ -343,6 +343,25 @@ body {
   /* Espacio opcional abajo antes del título */
 }
 
+#reacciones button {
+  border: none;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+#reacciones button:hover {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 8px rgba(44, 89, 203, 0.18));
+}
+
+#chat {
+  margin-top: 0.75rem;
+}
+
 /* 2. Centramos el título "Reacciones recibidas" */
 #chat h3 {
   text-align: center;
