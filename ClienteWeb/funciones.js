@@ -335,7 +335,6 @@ async function iniciarReproduccionReal() {
     if (!audioYaInicio) {
       estadoSilencioso = true;
       await window.reproductorFragmentos.reproducir(audioSeleccionado.id, audioSeleccionado.id);
-      audioYaInicio = true;
       estadoSilencioso = false;
     }
   }
@@ -493,6 +492,7 @@ function agregarEntradaActividad(contenedorId, nickname, texto, claseExtra) {
   `;
   contenedor.prepend(entrada);
   limitarHijos(contenedor, 6);
+  mostrarBurbujaReaccion(emoji);
 }
 
 function mostrarPanelReacciones() {

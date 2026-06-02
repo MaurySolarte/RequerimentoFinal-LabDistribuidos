@@ -120,9 +120,6 @@
       <label>Administrador web</label>
       <a class="enlace-volver" href="index.html">Volver al cliente</a>
     </div>
-    <div class="botones_conexion">
-      <button type="button" id="btnRefrescarCatalogo">Actualizar catálogo</button>
-    </div>
   </div>
 
   <main class="grid tablero-principal">
@@ -211,7 +208,6 @@
     document.addEventListener('DOMContentLoaded', iniciarAdmin);
 
     function iniciarAdmin() {
-      document.getElementById('btnRefrescarCatalogo').addEventListener('click', cargarCatalogo);
       document.getElementById('tipo-audio-admin').addEventListener('change', evento => renderizarCamposDinamicos(Number(evento.target.value)));
       document.getElementById('formulario-registro').addEventListener('submit', registrarAudio);
       cargarCatalogo();
