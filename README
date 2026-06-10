@@ -8,3 +8,7 @@
     sudo apt-get install envoy
 
     envoy --version
+
+
+-- Comando para levantar Envoy:
+    ./envoyServer -c envoyConfig2.yaml --disable-hot-restart
